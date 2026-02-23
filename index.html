@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mundi Wiki — 虛擬世界百科全書</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="wiki-header">
+    <div class="header-left">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="側欄">&#9776;</button>
+      <a href="#/" class="logo">
+        <span class="logo-icon">&#9876;</span>
+        <div>
+          <span class="logo-title">MUNDI</span>
+          <span class="logo-sub">虛擬世界百科全書</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-search">
+      <input type="search" id="global-search" placeholder="搜尋文章、地點、人物…" autocomplete="off" />
+      <div class="search-results-dropdown" id="search-dropdown"></div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn btn-outline" id="theme-toggle" title="切換主題">☽</button>
+      <button class="btn btn-primary" id="new-article-btn">＋ 新增文章</button>
+    </div>
+  </header>
+
+  <!-- ── Layout ──────────────────────────────────────────────── -->
+  <div class="wiki-layout">
+
+    <!-- Sidebar -->
+    <aside class="wiki-sidebar" id="sidebar">
+      <nav>
+        <section class="nav-section">
+          <h4>導航</h4>
+          <ul>
+            <li><a href="#/">&#127968; 首頁</a></li>
+            <li><a href="#/map">&#128506; 世界地圖</a></li>
+            <li><a href="#/timeline">&#128214; 歷史年表</a></li>
+            <li><a href="#/recent">&#8987; 最近更新</a></li>
+            <li><a href="#/random">&#127922; 隨機文章</a></li>
+          </ul>
+        </section>
+
+        <section class="nav-section">
+          <h4>分類</h4>
+          <ul id="categories-nav"></ul>
+        </section>
+
+        <section class="nav-section">
+          <h4>熱門標籤</h4>
+          <div class="tag-cloud" id="tag-cloud"></div>
+        </section>
+
+        <section class="nav-section">
+          <h4>近期文章</h4>
+          <ul id="recent-nav"></ul>
+        </section>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="wiki-main" id="main-content">
+      <div class="loading-spinner" id="page-loader">載入中…</div>
+    </main>
+  </div>
+
+  <!-- ── Edit / Create Modal ─────────────────────────────────── -->
+  <div class="modal-overlay" id="edit-modal" hidden>
+    <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+      <div class="modal-header">
+        <h2 id="modal-heading">編輯文章</h2>
+        <button class="modal-close" id="modal-close" aria-label="關閉">&#10005;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="article-form" novalidate>
+          <input type="hidden" id="article-id" />
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="article-title">標題 <span class="req">*</span></label>
+              <input type="text" id="article-title" placeholder="文章標題…" required />
+            </div>
+            <div class="form-group">
+              <label for="article-category">分類</label>
+              <select id="article-category">
+                <option value="general">一般</option>
+                <option value="locations">地點</option>
+                <option value="characters">人物</option>
+                <option value="factions">勢力</option>
+                <option value="creatures">生物</option>
+                <option value="magic">魔法系統</option>
+                <option value="history">歷史</option>
+                <option value="items">道具</option>
+                <option value="lore">世界觀</option>
+                <option value="languages">語言</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="article-tags">標籤 <span class="hint">（逗號分隔）</span></label>
+            <input type="text" id="article-tags" placeholder="例：魔法, 古代, 重要" />
+          </div>
+
+          <div class="form-group">
+            <label>內容 <span class="hint">（支援 Markdown 與 Wiki 語法）</span></label>
+            <div class="editor-toolbar">
+              <button type="button" class="tbtn" data-wrap="**|**" title="粗體">B</button>
+              <button type="button" class="tbtn" data-wrap="*|*" title="斜體"><em>I</em></button>
+              <button type="button" class="tbtn" data-prefix="## " title="標題 2">H2</button>
+              <button type="button" class="tbtn" data-prefix="### " title="標題 3">H3</button>
+              <span class="tb-sep"></span>
+              <button type="button" class="tbtn" data-snippet="[[文章名稱]]" title="Wiki 連結">[[]]</button>
+              <button type="button" class="tbtn" data-snippet="[文字](網址)" title="外部連結">&#128279;</button>
+              <button type="button" class="tbtn" data-prefix="- " title="清單">&#8801;</button>
+              <button type="button" class="tbtn" data-prefix="> " title="引用">&#10077;</button>
+              <button type="button" class="tbtn" data-wrap="`|`" title="行內程式碼">&#9126;</button>
+              <button type="button" class="tbtn" data-snippet="```&#10;程式碼&#10;```" title="程式碼區塊">&#9121;</button>
+              <span class="tb-sep"></span>
+              <button type="button" class="tbtn" id="infobox-btn" title="插入資訊框">&#128203;</button>
+              <span class="tb-sep"></span>
+              <button type="button" class="tbtn active" id="editor-tab" title="編輯">編輯</button>
+              <button type="button" class="tbtn" id="preview-tab" title="預覽">預覽</button>
+            </div>
+            <div class="editor-panes">
+              <textarea id="article-content" placeholder="使用 Markdown 格式書寫內容…&#10;&#10;支援：**粗體** *斜體* ## 標題 [[Wiki連結]] {{infobox|…}}"></textarea>
+              <div id="article-preview" class="wiki-content" hidden></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-summary">編輯摘要</label>
+            <input type="text" id="edit-summary" placeholder="簡述此次修改…" />
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-edit">取消</button>
+        <button class="btn btn-primary" id="save-article">儲存文章</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete Confirm Modal ────────────────────────────────── -->
+  <div class="modal-overlay" id="delete-modal" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2>確認刪除</h2>
+      </div>
+      <div class="modal-body">
+        <p>確定刪除「<span id="delete-article-name"></span>」嗎？此操作無法還原。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-delete">取消</button>
+        <button class="btn btn-danger" id="confirm-delete">刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ─────────────────────────────────────── -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ── Scripts ─────────────────────────────────────────────── -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/markdown.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
